@@ -1,4 +1,4 @@
-package library.enrichment.external
+package library.enrichment.core
 
 
 data class BookData(

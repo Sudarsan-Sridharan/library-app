@@ -3,9 +3,8 @@ package library.enrichment.external.isbndb
 import com.fasterxml.jackson.databind.JsonNode
 import feign.FeignException
 import library.enrichment.common.logging.logger
-import library.enrichment.external.BookData
-import library.enrichment.external.BookDataSource
-import library.enrichment.external.openlibrary.OpenLibraryClient
+import library.enrichment.core.BookData
+import library.enrichment.core.BookDataSource
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 
