@@ -19,25 +19,35 @@ class BookEventProcessor(
         val bookId = event.bookId
 
         val isbn = library.getIsbnOfBook(bookId) // TODO what happens if book is no longer there?
-        val bookDataSets = dataSources.map { it.getBookData(isbn) }.filterNotNull()
+        val bookDataSets = dataSources.mapNotNull {
+            log.debug("looking up book data using {}", it)
+            it.getBookData(isbn)
+        }
 
-        // TODO how to determine best available data?
+        if (bookDataSets.isNotEmpty()) {
+            updateTitle(bookId, bookDataSets)
+            updateAuthors(bookId, bookDataSets)
+            updateNumberOfPages(bookId, bookDataSets)
+        }
 
-        val bestTitle = bookDataSets
-                .mapNotNull { it.title }
+    }
+
+    private fun updateTitle(bookId: String, dataSets: Iterable<BookData>) {
+        dataSets.mapNotNull { it.title }
                 .firstOrNull { it.isNotBlank() }
-        val bestAuthors = bookDataSets
-                .map { it.authors }
-                .firstOrNull { it.isNotEmpty() }
-        val bestNumberOfPages = bookDataSets
-                .mapNotNull { it.numberOfPages }
-                .firstOrNull { it > 0 }
+                ?.let { library.updateBookTitle(bookId, it) }
+    }
 
-        library.updateBook(bookId, BookUpdateData(
-                title = bestTitle,
-                authors = bestAuthors,
-                numberOfPages = bestNumberOfPages
-        ))
+    private fun updateAuthors(bookId: String, dataSets: Iterable<BookData>) {
+        dataSets.map { it.authors }
+                .firstOrNull { it.isNotEmpty() }
+                ?.let { library.updateBookAuthors(bookId, it) }
+    }
+
+    private fun updateNumberOfPages(bookId: String, dataSets: Iterable<BookData>) {
+        dataSets.mapNotNull { it.numberOfPages }
+                .firstOrNull { it > 0 }
+                ?.let { library.updateBookNumberOfPages(bookId, it) }
     }
 
 }
